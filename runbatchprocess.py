@@ -12,7 +12,9 @@ from multiprocessing import Pool
 def getMpBatchMap(fileList, commandTemplate, concurrentProcesses):
     mpBatchMap = []
     for i in range(concurrentProcesses):
-        mpBatchMap.append((fileList.readline(), commandTemplate))
+        fileName = fileList.readline()
+        if fileName:
+            mpBatchMap.append((fileName, commandTemplate))
     return mpBatchMap
 
 def executeSystemProcesses(objFileName, commandTemplate):
@@ -36,6 +38,9 @@ def process(FILE_LIST_FILENAME, commandTemplateString, concurrentProcesses=3):
             # Get a batch of x files to process
             mpBatchMap = getMpBatchMap(fileList, commandTemplate, concurrentProcesses)
             # Process them
-            logging.debug('Starting MP batch of %i' % concurrentProcesses)
-            with Pool(concurrentProcesses) as p:
-                print(p.starmap(executeSystemProcesses, mpBatchMap))
+            logging.debug('Starting MP batch of %i' % len(mpBatchMap))
+            if mpBatchMap:
+                with Pool(concurrentProcesses) as p:
+                    print(p.starmap(executeSystemProcesses, mpBatchMap))
+            else:
+                break

@@ -30,7 +30,7 @@ os.system("find '%s' -name 'OBJ.*' > %s" % (TOPFOLDER, FILE_LIST_FILENAME))
 
 # Generate TN.jpg derivatives
 logging.info('Generating TN.jpg derivatives')
-#runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 256x256 "$objFileName" "$objDirName/TN.jpg"')
+runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 256x256 "$objFileName" "$objDirName/TN.jpg"')
 # Generate JP2.jp2 derivatives
 logging.info('Generating JP2.jp2 derivatives')
 #unbatchprocess.process(FILE_LIST_FILENAME, 'convert "$objFileName" "$objDirName/JP2.jp2"')
@@ -38,7 +38,7 @@ logging.info('Generating JP2.jp2 derivatives')
 logging.info('Generating JPG.jpg derivatives (preview jpg)')
 #runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 767x767 "$objFileName" "$objDirName/JPG.jpg"')
 logging.info('Generating LARGE_JPG.jpg derivatives')
-runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 1920x1920 "$objFileName" "$objDirName/LARGE_JPG.jpg"')
+#runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 1920x1920 "$objFileName" "$objDirName/LARGE_JPG.jpg"')
 logging.info('Generating HOCR and OCR')
 # Run tesseract, then move the output files to their proper locations
 #runbatchprocess.process(FILE_LIST_FILENAME, 'tesseract "$objFileName" "$objDirName/tesseract-output" HOCR TXT && mv "$objDirName/tesseract-output.hocr" "$objDirName/HOCR" && mv "$objDirName/tesseract-output.txt" "$objDirName/OCR"')

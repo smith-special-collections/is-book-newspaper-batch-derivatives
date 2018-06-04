@@ -24,7 +24,7 @@ def executeSystemProcesses(objFileName, commandTemplate):
     command = commandTemplate.substitute(objFileName=objFileName, objDirName=objDirName)
     logging.debug(command)
     subprocess.call(command, shell=True)
-
+    
 def process(FILE_LIST_FILENAME, commandTemplateString, concurrentProcesses=3):
     """Go through the list of files and run the provided command against them,
     one at a time. Template string maps the terms $objFileName and $objDirName.
@@ -41,6 +41,7 @@ def process(FILE_LIST_FILENAME, commandTemplateString, concurrentProcesses=3):
             logging.debug('Starting MP batch of %i' % len(mpBatchMap))
             if mpBatchMap:
                 with Pool(concurrentProcesses) as p:
-                    print(p.starmap(executeSystemProcesses, mpBatchMap))
+                    poolResult = p.starmap(executeSystemProcesses, mpBatchMap)
+                    logging.debug('Pool result: %s' % str(poolResult))
             else:
                 break

@@ -52,6 +52,6 @@ runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 767x767 "$objFileNa
 runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 1920x1920 "$objFileName" "$objDirName/LARGE_JPG.jpg"', concurrentProcesses=39)
 logging.info('Generating HOCR and OCR')
 # Run tesseract, then move the output files to their proper locations
-runbatchprocess.process(FILE_LIST_FILENAME, 'tesseract "$objFileName" "$objDirName/tesseract-output" hocr txt &> "$objDirName/.tesseract.log" && mv "$objDirName/tesseract-output.hocr" "$objDirName/HOCR.html" && mv "$objDirName/tesseract-output.txt" "$objDirName/OCR.txt"', concurrentProcesses=20)
+runbatchprocess.process(FILE_LIST_FILENAME, 'tesseract "$objFileName" "$objDirName/tesseract-output" hocr txt &> "$objDirName/.tesseract-`date +%s`.log" && mv "$objDirName/tesseract-output.hocr" "$objDirName/HOCR.html" && mv "$objDirName/tesseract-output.txt" "$objDirName/OCR.txt"', concurrentProcesses=20)
 
 logging.info('Total running time: ' + str(datetime.now()-start))

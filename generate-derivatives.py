@@ -18,6 +18,8 @@ import os
 import runbatchprocess
 import logging
 import argparse
+from datetime import datetime
+start=datetime.now()
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("TOPFOLDER")
@@ -27,7 +29,9 @@ TOPFOLDER = args.TOPFOLDER
 FILE_LIST_FILENAME = '.tmpfilelist'
 
 # Set up basic logging
-logging.basicConfig(level=logging.DEBUG)
+logFileName = TOPFOLDER + "derivatives-" + start.strftime('%Y%m%d-%H%M%S') + '.log'
+logging.basicConfig(filename=logFileName, level=logging.DEBUG)
+print("Logging to: %s" % logFileName)
 
 logging.info('Processing folder ' + TOPFOLDER)
 
@@ -49,3 +53,5 @@ runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 1920x1920 "$objFile
 logging.info('Generating HOCR and OCR')
 # Run tesseract, then move the output files to their proper locations
 runbatchprocess.process(FILE_LIST_FILENAME, 'tesseract "$objFileName" "$objDirName/tesseract-output" hocr txt && mv "$objDirName/tesseract-output.hocr" "$objDirName/HOCR.html" && mv "$objDirName/tesseract-output.txt" "$objDirName/OCR.txt"', concurrentProcesses=20)
+
+logging.info('Total running time: ' + str(datetime.now()-start))

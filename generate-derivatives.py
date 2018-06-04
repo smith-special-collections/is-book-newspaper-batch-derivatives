@@ -17,12 +17,19 @@ Searches for any file matching OBJ.*. Assumes that it's an image.
 import os
 import runbatchprocess
 import logging
+import argparse
 
-TOPFOLDER = 'Y-Teen Scene-original-batched'
+argparser = argparse.ArgumentParser()
+argparser.add_argument("TOPFOLDER")
+args = argparser.parse_args()
+
+TOPFOLDER = args.TOPFOLDER
 FILE_LIST_FILENAME = '.tmpfilelist'
 
 # Set up basic logging
 logging.basicConfig(level=logging.DEBUG)
+
+logging.info('Processing folder ' + TOPFOLDER)
 
 # Use find to generate a list of OBJ files and write it to a file
 # (sidestep output buffering issues with very long lists of files)

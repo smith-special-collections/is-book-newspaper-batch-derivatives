@@ -8,6 +8,8 @@ import mmap
 import re
 from datasets import commonEnglishWordS
 
+OCR_FILENAME = 'OCR.txt'
+HOCR_FILENAME = 'HOCR.html'
 
 def fileContains(filepath, mystring):
     """Check if a file contains a string
@@ -23,10 +25,30 @@ def fileContains(filepath, mystring):
 
 def fileContainsCommonEnglishWords(filepath):
     for word in commonEnglishWordS:
-        if fileContains(filename, word) is True:
+        if fileContains(filepath, word) is True:
             return True
     # no matches... return False
     return False
+
+def checkOCR(dirname):
+    # Is there an OCR.txt file?
+    # Does the file contain an english word? e.g. 'the, and'
+    filename = dirname + OCR_FILENAME
+    try:
+        if fileContainsCommonEnglishWords(filename) is False:
+            logging.warning("Page OCR output doesn't contain any common English words \"%s\"" % filename)
+    except FileNotFoundError:
+        logging.error('File not found %s' % filename)
+
+def checkHOCR(dirname):
+    # Is there an HOCR.html file?
+    # Does the HOCR file contain xml/html?
+    filename = dirname + HOCR_FILENAME
+    try:
+        if fileContains(filename, "html") is False:
+            logging.error("Page HOCR output doesn't contain 'html' \"%s\"" % filename)
+    except FileNotFoundError:
+        logging.error('File not found %s' % filename)
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("TOPFOLDER")
@@ -38,21 +60,11 @@ FILE_LIST_FILENAME = '.tmpfilelist-ocr-check'
 # Set up basic logging
 logging.basicConfig(level=logging.DEBUG)
 
-logging.info('Checking folder ' + TOPFOLDER)
+logging.info('Checking OCR in folder ' + TOPFOLDER)
 
 # Go in each folder (page)
 dirnameS = glob(TOPFOLDER + "/*/")
 
 for dirname in dirnameS:
-    # Is there an OCR.txt file?
-    # Does the file contain an english word? e.g. 'the, and'
-    filename = dirname + 'OCR.txt'
-    testString = b'the'
-    try:
-        if fileContainsCommonEnglishWords(filename) is False:
-            logging.error("Page OCR output doesn't contain any common English words \"%s\"" % filename)
-    except FileNotFoundError:
-        logging.error('File not found %s' % filename)
-    # Is there an HOCR.html file?
-    # Does the HOCR file contain xml/html?
-    # Does the file contain an english word? e.g. 'the, and'
+    checkOCR(dirname)
+    checkHOCR(dirname)

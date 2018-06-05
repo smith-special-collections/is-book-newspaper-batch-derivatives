@@ -33,15 +33,28 @@ def process(FILE_LIST_FILENAME, commandTemplateString, concurrentProcesses=3):
     >>> runBatchProcess('convert -scale 256 "$objFileName" "$objDirName/TN.jpg"')
     """
     commandTemplate = Template(commandTemplateString)
-    with open(FILE_LIST_FILENAME) as fileList:
-        while 1:
-            # Get a batch of x files to process
-            mpBatchMap = getMpBatchMap(fileList, commandTemplate, concurrentProcesses)
-            # Process them
-            logging.debug('Starting MP batch of %i' % len(mpBatchMap))
-            if mpBatchMap:
-                with Pool(concurrentProcesses) as p:
-                    poolResult = p.starmap(executeSystemProcesses, mpBatchMap)
-                    logging.debug('Pool result: %s' % str(poolResult))
-            else:
-                break
+
+    if concurrentProcesses > 1:
+        with open(FILE_LIST_FILENAME) as fileList:
+            while 1:
+                # Get a batch of x files to process
+                mpBatchMap = getMpBatchMap(fileList, commandTemplate, concurrentProcesses)
+                # Process them
+                logging.debug('Starting MP batch of %i' % len(mpBatchMap))
+                if mpBatchMap:
+                    with Pool(concurrentProcesses) as p:
+                        poolResult = p.starmap(executeSystemProcesses, mpBatchMap)
+                        logging.debug('Pool result: %s' % str(poolResult))
+                else:
+                    break
+    else:
+        # If concurrentProcesses is sent to 1, then don't do the fancy
+        # multiprocess batch pooling stuff.
+        # Go through the list of files to process and do them one at a time:
+        with open(FILE_LIST_FILENAME) as fileList:
+            while 1:
+                fileName = fileList.readline()
+                if fileName:
+                    executeSystemProcesses(fileName, commandTemplate)
+                else:
+                    break

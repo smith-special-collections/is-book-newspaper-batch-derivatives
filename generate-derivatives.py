@@ -20,7 +20,7 @@ Kakadu
 JP2s are generated using Kakadu, which can be downloaded here:
 http://kakadusoftware.com/downloads/
 
-Make sure it's in your path by typig ```kdu_compress``` in a terminal.
+Make sure you configure the Kakadu path in config.py -- see README.md
 
 """
 import os

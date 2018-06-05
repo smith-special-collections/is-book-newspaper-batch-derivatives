@@ -35,8 +35,9 @@ setupEnvironment()
 
 start=datetime.now()
 
-KAKADU_ARGUMENTS = '-rate 0.5 Clayers=1 Clevels=7 "Cprecincts={256,256},{256,256},{256,256},{128,128},{128,128},{64,64},{64,64},{32,32},{16,16}" "Corder=RPCL" "ORGgen_plt=yes" "ORGtparts=R" "Cblk={32,32}" Cuse_sop=yes'
 # Using Islandora default arguments for Kakadu
+# EXCEPT for that numbe_threads is set to 1 -- long story
+KAKADU_ARGUMENTS = '-num_threads 1 -rate 0.5 Clayers=1 Clevels=7 "Cprecincts={256,256},{256,256},{256,256},{128,128},{128,128},{64,64},{64,64},{32,32},{16,16}" "Corder=RPCL" "ORGgen_plt=yes" "ORGtparts=R" "Cblk={32,32}" Cuse_sop=yes'
 # c.f.: https://github.com/Islandora/islandora_solution_pack_large_image/blob/7.x-release/includes/derivatives.inc#L199
 
 argparser = argparse.ArgumentParser()
@@ -63,10 +64,10 @@ os.system("find '%s' -name 'OBJ.*' > %s" % (TOPFOLDER, FILE_LIST_FILENAME))
 # Generate JP2.jp2 derivatives
 logging.info('Generating JP2.jp2 derivatives')
 # First make tiffs uncompress so that the demonstration version of Kakadu can parse them
-runbatchprocess.process(FILE_LIST_FILENAME, 'convert -compress none "$objFileName" "$objDirName/.uncompressedOBJ.tif"', concurrentProcesses=39)
+#runbatchprocess.process(FILE_LIST_FILENAME, 'convert -compress none "$objFileName" "$objDirName/.uncompressedOBJ.tif"', concurrentProcesses=39)
 # Then run Kakadu using the Islandora arguments
-# Kakadu is multithreaded so we set concurrentProcesses to 1
-runbatchprocess.process(FILE_LIST_FILENAME, 'kdu_compress -i "$objDirName/.uncompressedOBJ.tif" -o "$objDirName/JP2.jp2" %s &> "$objDirName/.kakadu-`date +%%s`.log"' % KAKADU_ARGUMENTS, concurrentProcesses=1)
+# Kakadu is multithreaded so I expected to set concurrentProcesses to 1. However I was seeing underutilization so I set Kakadu to be not multithreaded (above) and set the concurrentProcesses to a level to 39.
+runbatchprocess.process(FILE_LIST_FILENAME, 'kdu_compress -i "$objDirName/.uncompressedOBJ.tif" -o "$objDirName/JP2.jp2" %s &> "$objDirName/.kakadu-`date +%%s`.log"' % KAKADU_ARGUMENTS, concurrentProcesses=39)
 # # Generate JPG.jpg derivatives (preview jpg)
 # logging.info('Generating JPG.jpg derivatives (preview jpg)')
 # runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 767x767 "$objFileName" "$objDirName/JPG.jpg"', concurrentProcesses=39)

@@ -1,5 +1,0 @@
-PATH=$PATH:/usr/local/tesseract-files/kakadu/bin
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/tesseract-files/kakadu/bin
-export PATH
-export LD_LIBRARY_PATH
-

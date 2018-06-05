@@ -1,0 +1,4 @@
+"""These variables will likely need to be set for Kakadu and Fits to work.
+"""
+KAKADU_PATH = ""
+FITS_PATH = ""

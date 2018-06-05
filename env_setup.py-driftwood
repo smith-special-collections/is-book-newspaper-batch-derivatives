@@ -1,5 +1,0 @@
-import os
-
-def setupEnvironment():
-    os.environ["PATH"] = os.environ["PATH"] + ":/usr/local/tesseract-files/kakadu/bin"
-    os.environ["LD_LIBRARY_PATH"] = "/usr/local/tesseract-files/kakadu/bin"

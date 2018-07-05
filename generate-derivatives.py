@@ -73,7 +73,7 @@ logging.info('Generating LARGE_JPG.jpg derivatives')
 runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 1920x1920 "$objFileName" "$objDirName/LARGE_JPG.jpg"', concurrentProcesses=39)
 logging.info('Generating HOCR and OCR')
 # Run tesseract, then move the output files to their proper locations
-runbatchprocess.process(FILE_LIST_FILENAME, 'tesseract "$objFileName" "$objDirName/tesseract-output" hocr txt &> "$objDirName/.tesseract-`date +%s`.log" && mv "$objDirName/tesseract-output.hocr" "$objDirName/HOCR.html" && mv "$objDirName/tesseract-output.txt" "$objDirName/OCR.txt"', concurrentProcesses=20)
+runbatchprocess.process(FILE_LIST_FILENAME, 'tesseract "$objFileName" "$objDirName/tesseract-output" hocr txt >> "$objDirName/.tesseract-`date +%s`.log" 2>&1 && mv "$objDirName/tesseract-output.hocr" "$objDirName/HOCR.html" && mv "$objDirName/tesseract-output.txt" "$objDirName/OCR.txt" 2>&1', concurrentProcesses=20)
 logging.info('Generating TECHMD.xml files with Fits')
 runbatchprocess.process(FILE_LIST_FILENAME, 'fits.sh -i "$objFileName" -o "$objDirName/TECHMD.xml" >>"$objDirName/.fits-`date +%s`.log" 2>&1', concurrentProcesses=10)
 logging.info('Aggregating OCR')

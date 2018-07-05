@@ -37,8 +37,9 @@ start=datetime.now()
 
 # Using Islandora default arguments for Kakadu
 # EXCEPT for that numbe_threads is set to 1 -- long story
-KAKADU_ARGUMENTS = '-num_threads 1 -rate 0.5 Clayers=1 Clevels=7 "Cprecincts={256,256},{256,256},{256,256},{128,128},{128,128},{64,64},{64,64},{32,32},{16,16}" "Corder=RPCL" "ORGgen_plt=yes" "ORGtparts=R" "Cblk={32,32}" Cuse_sop=yes'
+KAKADU_ARGUMENTS = '-num_threads 1 Creversible=yes -rate -,1,0.5,0.25 Clevels=0 "Cprecincts={256,256},{256,256},{256,256},{128,128},{128,128},{64,64},{64,64},{32,32},{16,16}" "Corder=RPCL" "ORGgen_plt=yes" "ORGtparts=R" "Cblk={32,32}" Cuse_sop=yes'
 # c.f.: https://github.com/Islandora/islandora_solution_pack_large_image/blob/7.x-release/includes/derivatives.inc#L199
+# c.f.: https://groups.google.com/forum/#!topic/islandora-dev/HivVsLFSxEg
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("TOPFOLDER")

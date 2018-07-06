@@ -35,9 +35,10 @@ setupEnvironment()
 
 start=datetime.now()
 
-# Using Islandora default arguments for Kakadu
-# EXCEPT for that numbe_threads is set to 1 -- long story
-KAKADU_ARGUMENTS = '-num_threads 1 Creversible=yes -rate -,1,0.5,0.25 Clevels=0 "Cprecincts={256,256},{256,256},{256,256},{128,128},{128,128},{64,64},{64,64},{32,32},{16,16}" "Corder=RPCL" "ORGgen_plt=yes" "ORGtparts=R" "Cblk={32,32}" Cuse_sop=yes'
+# Use default kakadu settings from Islandora code
+# EXCEPT for that num_threads is set to 1 -- long story
+KAKADU_ARGUMENTS = '-num_threads 1 -rate 0.5 Clayers=1 Clevels=7 "Cprecincts={256,256},{256,256},{256,256},{128,128},{128,128},{64,64},{64,64},{32,32},{16,16}" "Corder=RPCL" "ORGgen_plt=yes" "ORGtparts=R" "Cblk={32,32}" Cuse_sop=yes'
+#KAKADU_ARGUMENTS = '-num_threads 1 Creversible=yes -rate -,1,0.5,0.25'
 # c.f.: https://github.com/Islandora/islandora_solution_pack_large_image/blob/7.x-release/includes/derivatives.inc#L199
 # c.f.: https://groups.google.com/forum/#!topic/islandora-dev/HivVsLFSxEg
 
@@ -62,8 +63,10 @@ os.system("find '%s' -name 'OBJ.*' > %s" % (TOPFOLDER, FILE_LIST_FILENAME))
 logging.info('Generating TN.jpg derivatives')
 runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 256x256 "$objFileName" "$objDirName/TN.jpg"', concurrentProcesses=39)
 logging.info('Generating JP2.jp2 derivatives')
-# First make tiffs uncompress so that the demonstration version of Kakadu can parse them
-runbatchprocess.process(FILE_LIST_FILENAME, 'convert -compress none "$objFileName" "$objDirName/.uncompressedOBJ.tif"', concurrentProcesses=39)
+# Kakadu doesn't like 1bit tiffs. For some reason imagemagick ignores -depth 8 when going from tif to tif so we'll use png as
+# an intermediary
+runbatchprocess.process(FILE_LIST_FILENAME, 'convert -compress none "$objFileName" -depth 8 "$objDirName/.8bitOBJ.png"', concurrentProcesses=39)
+runbatchprocess.process(FILE_LIST_FILENAME, 'convert -compress none "$objDirName/.8bitOBJ.png" -depth 8 "$objDirName/.uncompressedOBJ.tif"', concurrentProcesses=39)
 # Then run Kakadu using the Islandora arguments
 # Kakadu is multithreaded so I expected to set concurrentProcesses to 1. However I was seeing underutilization so I set Kakadu to be not multithreaded (above) and set the concurrentProcesses to a level to 39.
 runbatchprocess.process(FILE_LIST_FILENAME, 'kdu_compress -i "$objDirName/.uncompressedOBJ.tif" -o "$objDirName/JP2.jp2" %s &> "$objDirName/.kakadu-`date +%%s`.log"' % KAKADU_ARGUMENTS, concurrentProcesses=39)

@@ -11,6 +11,9 @@ from datasets import commonEnglishWordS
 OCR_FILENAME = 'OCR.txt'
 HOCR_FILENAME = 'HOCR.html'
 
+PAGES_CHECKED = 0
+TEXTLESS_PAGES = 0
+
 def fileContains(filepath, mystring):
     """Check if a file contains a string
     """
@@ -33,12 +36,15 @@ def fileContainsCommonEnglishWords(filepath):
 def checkOCR(dirname):
     # Is there an OCR.txt file?
     # Does the file contain an english word? e.g. 'the, and'
+    global TEXTLESS_PAGES
     filename = dirname + OCR_FILENAME
     try:
         if fileContainsCommonEnglishWords(filename) is False:
             logging.warning("Page OCR output doesn't contain any common English words \"%s\"" % filename)
+            TEXTLESS_PAGES = TEXTLESS_PAGES + 1
     except FileNotFoundError:
         logging.error('File not found %s' % filename)
+        TEXTLESS_PAGES = TEXTLESS_PAGES + 1
 
 def checkHOCR(dirname):
     # Is there an HOCR.html file?
@@ -68,3 +74,12 @@ dirnameS = glob(TOPFOLDER + "/*/")
 for dirname in dirnameS:
     checkOCR(dirname)
     checkHOCR(dirname)
+    PAGES_CHECKED = PAGES_CHECKED + 1
+
+logging.info('Checked %s pages', PAGES_CHECKED)
+logging.info('Pages missing OCR text: %s', TEXTLESS_PAGES)
+
+textlessRatio = TEXTLESS_PAGES/(PAGES_CHECKED/100)
+
+if textlessRatio > 10:
+    logging.error('Over 10 percent of pages missing OCR text: %s percent' % textlessRatio)

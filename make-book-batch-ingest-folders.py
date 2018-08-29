@@ -11,13 +11,18 @@ import argparse
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("TOPFOLDER")
+argparser.add_argument('--nocopy', help="Modifying the folder directly instead of making a copy", action="store_true")
 args = argparser.parse_args()
 
 TOPFOLDER = args.TOPFOLDER
 
 sourceFolder = TOPFOLDER.strip().strip('/')
-destFolder = sourceFolder + '-batched'
-shutil.copytree(sourceFolder, destFolder)
+
+if(args.nocopy):
+    destFolder = sourceFolder
+else:
+    destFolder = sourceFolder + '-batched'
+    shutil.copytree(sourceFolder, destFolder)
 os.chdir(destFolder)
 
 pageFileExtension = '.TIF'
@@ -26,6 +31,11 @@ pageFileExtension = '.TIF'
 pageNum = 1
 pageFileName_S = glob.glob(r'*' + pageFileExtension)
 pageFileName_S.sort()
+
+if len(pageFileName_S) < 1:
+    print("No files in %s ending in %s" % (destFolder, pageFileExtension))
+    print("Quiting")
+    exit(1)
 
 for pageFileName in pageFileName_S:
     print(pageFileName)

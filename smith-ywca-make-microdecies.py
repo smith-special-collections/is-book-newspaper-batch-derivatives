@@ -20,15 +20,20 @@ import argparse
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("TOPFOLDER")
+argparser.add_argument('--nocopy', help="Modifying the folder directly instead of making a copy", action="store_true")
 args = argparser.parse_args()
 
 TOPFOLDER = args.TOPFOLDER
 
 sourceFolder = TOPFOLDER.strip().strip('/')
 
-destFolder = sourceFolder + '-microdexed'
-print('Create directory %s' % destFolder)
-shutil.copytree(sourceFolder, destFolder)
+if(args.nocopy):
+    destFolder = sourceFolder
+else:
+    destFolder = sourceFolder + '-microdexed'
+    print('Create directory %s' % destFolder)
+    shutil.copytree(sourceFolder, destFolder)
+
 os.chdir(destFolder)
 
 pageFileExtension = '.TIF'

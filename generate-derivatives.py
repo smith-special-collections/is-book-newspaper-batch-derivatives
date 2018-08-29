@@ -80,8 +80,11 @@ runbatchprocess.process(FILE_LIST_FILENAME, 'tesseract "$objFileName" "$objDirNa
 # Strip out DOCTYPE tag with DTD declaration so that Islandora doesn't contact w3.org for every page on index
 runbatchprocess.process(FILE_LIST_FILENAME, 'sed -i "/DOCTYPE/d" "$objDirName/HOCR.html" && sed -i "/w3\.org\/TR\/xhtml1\/DTD/d" "$objDirName/HOCR.html"', concurrentProcesses=39)
 # Aggregate OCR to top level object
+logging.info('Aggregating OCR')
 os.system("cat %s/*/OCR.txt > %s/OCR.txt" % (TOPFOLDER, TOPFOLDER))
 logging.info('Generating TECHMD.xml files with Fits')
 runbatchprocess.process(FILE_LIST_FILENAME, 'fits.sh -i "$objFileName" -o "$objDirName/TECHMD.xml" >>"$objDirName/.fits-`date +%s`.log" 2>&1', concurrentProcesses=10)
-logging.info('Aggregating OCR')
+# Cleanup
+logging.info('Cleaning up temporary files')
+runbatchprocess.process(FILE_LIST_FILENAME, 'rm "$objDirName/.8bitOBJ.png" && rm "$objDirName/.uncompressedOBJ.tif"', concurrentProcesses=1)
 logging.info('Total running time: ' + str(datetime.now()-start))

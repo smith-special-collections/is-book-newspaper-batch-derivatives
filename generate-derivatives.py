@@ -7,6 +7,7 @@
 [x] JPG 767px max
 [x] LARGE_JPG 1920px max
 [x] FITS/TECHMD
+[ ] PDF
 ...
 Sample page object: https://compass-dev.fivecolleges.edu/islandora/object/test:203/manage/datastreams
 
@@ -62,6 +63,8 @@ os.system("find '%s' -name 'OBJ.*' > %s" % (TOPFOLDER, FILE_LIST_FILENAME))
 
 logging.info('Generating TN.jpg derivatives')
 runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 256x256 "$objFileName" "$objDirName/TN.jpg"', concurrentProcesses=39)
+logging.info('Copy representative thumbnail')
+os.system("cp %s/00001/TN.jpg %s/" % (TOPFOLDER, TOPFOLDER))
 logging.info('Generating JP2.jp2 derivatives')
 # Kakadu doesn't like 1bit tiffs. For some reason imagemagick ignores -depth 8 when going from tif to tif so we'll use png as
 # an intermediary

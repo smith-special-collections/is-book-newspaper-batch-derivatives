@@ -9,14 +9,6 @@ from string import Template
 import logging
 from multiprocessing import Pool
 
-def getMpBatchMap(fileList, commandTemplate, concurrentProcesses):
-    mpBatchMap = []
-    for i in range(concurrentProcesses):
-        fileName = fileList.readline()
-        if fileName:
-            mpBatchMap.append((fileName, commandTemplate))
-    return mpBatchMap
-
 def executeSystemProcesses(objFileName, commandTemplate):
     objFileName = objFileName.strip()
     logging.debug(objFileName)
@@ -33,15 +25,13 @@ def process(FILE_LIST_FILENAME, commandTemplateString, concurrentProcesses=3):
     >>> runBatchProcess('convert -scale 256 "$objFileName" "$objDirName/TN.jpg"')
     """
     commandTemplate = Template(commandTemplateString)
+    mpBatchMap = []
+
     with open(FILE_LIST_FILENAME) as fileList:
-        while 1:
-            # Get a batch of x files to process
-            mpBatchMap = getMpBatchMap(fileList, commandTemplate, concurrentProcesses)
-            # Process them
-            logging.debug('Starting MP batch of %i' % len(mpBatchMap))
-            if mpBatchMap:
-                with Pool(concurrentProcesses) as p:
-                    poolResult = p.starmap(executeSystemProcesses, mpBatchMap)
-                    logging.debug('Pool result: %s' % str(poolResult))
-            else:
-                break
+        for line in fileList:
+            mpBatchMap.append((line, commandTemplate))
+    logging.debug('Starting MP batch of %i with %i concurrent processes.' % (len(mpBatchMap), concurrentProcesses))
+    if mpBatchMap:
+        with Pool(concurrentProcesses) as p:
+            poolResult = p.starmap(executeSystemProcesses, mpBatchMap)
+            logging.debug('Pool result: %s' % str(poolResult))

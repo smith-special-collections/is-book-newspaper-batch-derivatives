@@ -86,7 +86,7 @@ runbatchprocess.process(FILE_LIST_FILENAME, 'sed -i "/DOCTYPE/d" "$objDirName/HO
 logging.info('Aggregating OCR')
 os.system("cat %s/*/OCR.txt > %s/OCR.txt" % (TOPFOLDER, TOPFOLDER))
 logging.info('Generating TECHMD.xml files with Fits')
-runbatchprocess.process(FILE_LIST_FILENAME, 'fits.sh -i "$objFileName" -o "$objDirName/TECHMD.xml" >>"$objDirName/.fits-`date +%s`.log" 2>&1', concurrentProcesses=10)
+runbatchprocess.process(FILE_LIST_FILENAME, 'fits.sh -i "$objFileName" -o "$objDirName/TECHMD.xml" >>"$objDirName/.fits-`date +%s`.log" 2>&1', concurrentProcesses=20)
 # Cleanup
 logging.info('Cleaning up temporary files')
 runbatchprocess.process(FILE_LIST_FILENAME, 'rm "$objDirName/.8bitOBJ.png" && rm "$objDirName/.uncompressedOBJ.tif"', concurrentProcesses=1)

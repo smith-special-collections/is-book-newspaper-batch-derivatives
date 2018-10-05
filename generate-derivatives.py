@@ -7,6 +7,7 @@
 [x] JPG 767px max
 [x] LARGE_JPG 1920px max
 [x] FITS/TECHMD
+[ ] PDF
 ...
 Sample page object: https://compass-dev.fivecolleges.edu/islandora/object/test:203/manage/datastreams
 
@@ -62,6 +63,8 @@ os.system("find '%s' -name 'OBJ.*' > %s" % (TOPFOLDER, FILE_LIST_FILENAME))
 
 logging.info('Generating TN.jpg derivatives')
 runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 256x256 "$objFileName" "$objDirName/TN.jpg"', concurrentProcesses=39)
+logging.info('Copy representative thumbnail')
+os.system("cp %s/00001/TN.jpg %s/" % (TOPFOLDER, TOPFOLDER))
 logging.info('Generating JP2.jp2 derivatives')
 # Kakadu doesn't like 1bit tiffs. For some reason imagemagick ignores -depth 8 when going from tif to tif so we'll use png as
 # an intermediary
@@ -69,7 +72,7 @@ runbatchprocess.process(FILE_LIST_FILENAME, 'convert -compress none "$objFileNam
 runbatchprocess.process(FILE_LIST_FILENAME, 'convert -compress none "$objDirName/.8bitOBJ.png" -depth 8 "$objDirName/.uncompressedOBJ.tif"', concurrentProcesses=39)
 # Then run Kakadu using the Islandora arguments
 # Kakadu is multithreaded so I expected to set concurrentProcesses to 1. However I was seeing underutilization so I set Kakadu to be not multithreaded (above) and set the concurrentProcesses to a level to 39.
-runbatchprocess.process(FILE_LIST_FILENAME, 'kdu_compress -i "$objDirName/.uncompressedOBJ.tif" -o "$objDirName/JP2.jp2" %s &> "$objDirName/.kakadu-`date +%%s`.log"' % KAKADU_ARGUMENTS, concurrentProcesses=39)
+runbatchprocess.process(FILE_LIST_FILENAME, 'kdu_compress -i "$objDirName/.uncompressedOBJ.tif" -o "$objDirName/JP2.jp2" %s >> "$objDirName/.kakadu-`date +%%s`.log" 2>&1' % KAKADU_ARGUMENTS, concurrentProcesses=39)
 logging.info('Generating JPG.jpg derivatives (preview jpg)')
 runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 767x767 "$objFileName" "$objDirName/JPG.jpg"', concurrentProcesses=39)
 logging.info('Generating LARGE_JPG.jpg derivatives')
@@ -83,7 +86,7 @@ runbatchprocess.process(FILE_LIST_FILENAME, 'sed -i "/DOCTYPE/d" "$objDirName/HO
 logging.info('Aggregating OCR')
 os.system("cat %s/*/OCR.txt > %s/OCR.txt" % (TOPFOLDER, TOPFOLDER))
 logging.info('Generating TECHMD.xml files with Fits')
-runbatchprocess.process(FILE_LIST_FILENAME, 'fits.sh -i "$objFileName" -o "$objDirName/TECHMD.xml" >>"$objDirName/.fits-`date +%s`.log" 2>&1', concurrentProcesses=10)
+runbatchprocess.process(FILE_LIST_FILENAME, 'fits.sh -i "$objFileName" -o "$objDirName/TECHMD.xml" >>"$objDirName/.fits-`date +%s`.log" 2>&1', concurrentProcesses=20)
 # Cleanup
 logging.info('Cleaning up temporary files')
 runbatchprocess.process(FILE_LIST_FILENAME, 'rm "$objDirName/.8bitOBJ.png" && rm "$objDirName/.uncompressedOBJ.tif"', concurrentProcesses=1)

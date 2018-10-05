@@ -72,7 +72,7 @@ runbatchprocess.process(FILE_LIST_FILENAME, 'convert -compress none "$objFileNam
 runbatchprocess.process(FILE_LIST_FILENAME, 'convert -compress none "$objDirName/.8bitOBJ.png" -depth 8 "$objDirName/.uncompressedOBJ.tif"', concurrentProcesses=39)
 # Then run Kakadu using the Islandora arguments
 # Kakadu is multithreaded so I expected to set concurrentProcesses to 1. However I was seeing underutilization so I set Kakadu to be not multithreaded (above) and set the concurrentProcesses to a level to 39.
-runbatchprocess.process(FILE_LIST_FILENAME, 'kdu_compress -i "$objDirName/.uncompressedOBJ.tif" -o "$objDirName/JP2.jp2" %s &> "$objDirName/.kakadu-`date +%%s`.log"' % KAKADU_ARGUMENTS, concurrentProcesses=39)
+runbatchprocess.process(FILE_LIST_FILENAME, 'kdu_compress -i "$objDirName/.uncompressedOBJ.tif" -o "$objDirName/JP2.jp2" %s >> "$objDirName/.kakadu-`date +%%s`.log" 2>&1' % KAKADU_ARGUMENTS, concurrentProcesses=39)
 logging.info('Generating JPG.jpg derivatives (preview jpg)')
 runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 767x767 "$objFileName" "$objDirName/JPG.jpg"', concurrentProcesses=39)
 logging.info('Generating LARGE_JPG.jpg derivatives')

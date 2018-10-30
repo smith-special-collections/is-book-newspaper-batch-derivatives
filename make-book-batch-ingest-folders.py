@@ -26,6 +26,19 @@ else:
 os.chdir(destFolder)
 
 pageFileExtension = '.TIF'
+
+# MODS template for page level metadata (just ID for linking)
+pageModsTemplate = """<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <titleInfo>
+        <title>{identifier}</title>
+    </titleInfo>
+    <identifier type="local">{identifier}</identifier>
+</mods>
+"""
+
+
+
 # Now for every page file make a folder
 # and move the page into there and name it OBJ
 pageNum = 1
@@ -44,4 +57,9 @@ for pageFileName in pageFileName_S:
     os.makedirs(pageFolder)
     print('Move file %s into folder %s' % (pageFileName, pageFolder))
     shutil.move(pageFileName, pageFolder + '/' + 'OBJ' + pageFileExtension)
+    id = pageFileName.split(".")[0]
+    modsOutput = pageModsTemplate.format(identifier=id)
+    print("Generate MODS.xml")
+    with open(pageFolder + '/MODS.xml', 'w') as modsFile:
+        modsFile.write(modsOutput)
     pageNum = pageNum + 1

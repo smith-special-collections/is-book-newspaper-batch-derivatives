@@ -82,4 +82,4 @@ logging.info('Pages missing OCR text: %s', TEXTLESS_PAGES)
 textlessRatio = TEXTLESS_PAGES/(PAGES_CHECKED/100)
 
 if textlessRatio > 10:
-    logging.error('Over 10 percent of pages missing OCR text: %s percent' % textlessRatio)
+    logging.error('%s Over 10 percent of pages missing OCR text: %s percent' % (TOPFOLDER, textlessRatio))

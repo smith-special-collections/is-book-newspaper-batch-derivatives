@@ -77,14 +77,14 @@ logging.info('Generating JPG.jpg derivatives (preview jpg)')
 runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 767x767 "$objFileName" "$objDirName/JPG.jpg"', concurrentProcesses=39)
 logging.info('Generating LARGE_JPG.jpg derivatives')
 runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 1920x1920 "$objFileName" "$objDirName/LARGE_JPG.jpg"', concurrentProcesses=39)
-#logging.info('Generating HOCR and OCR')
+logging.info('Generating HOCR and OCR')
 # Run tesseract, then move the output files to their proper locations
-#runbatchprocess.process(FILE_LIST_FILENAME, 'tesseract "$objFileName" "$objDirName/tesseract-output" hocr txt >> "$objDirName/.tesseract-`date +%s`.log" 2>&1 && mv "$objDirName/tesseract-output.hocr" "$objDirName/HOCR.html" && mv "$objDirName/tesseract-output.txt" "$objDirName/OCR.txt" 2>&1', concurrentProcesses=20)
+runbatchprocess.process(FILE_LIST_FILENAME, 'tesseract "$objFileName" "$objDirName/tesseract-output" hocr txt >> "$objDirName/.tesseract-`date +%s`.log" 2>&1 && mv "$objDirName/tesseract-output.hocr" "$objDirName/HOCR.html" && mv "$objDirName/tesseract-output.txt" "$objDirName/OCR.txt" 2>&1', concurrentProcesses=20)
 # Strip out DOCTYPE tag with DTD declaration so that Islandora doesn't contact w3.org for every page on index
-#runbatchprocess.process(FILE_LIST_FILENAME, 'sed -i "/DOCTYPE/d" "$objDirName/HOCR.html" && sed -i "/w3\.org\/TR\/xhtml1\/DTD/d" "$objDirName/HOCR.html"', concurrentProcesses=39)
+runbatchprocess.process(FILE_LIST_FILENAME, 'sed -i "/DOCTYPE/d" "$objDirName/HOCR.html" && sed -i "/w3\.org\/TR\/xhtml1\/DTD/d" "$objDirName/HOCR.html"', concurrentProcesses=39)
 # Aggregate OCR to top level object
-#logging.info('Aggregating OCR')
-#os.system("cat %s/*/OCR.txt > %s/OCR.txt" % (TOPFOLDER, TOPFOLDER))
+logging.info('Aggregating OCR')
+os.system("cat %s/*/OCR.txt > %s/OCR.txt" % (TOPFOLDER, TOPFOLDER))
 logging.info('Generating TECHMD.xml files with Fits')
 runbatchprocess.process(FILE_LIST_FILENAME, 'fits.sh -i "$objFileName" -o "$objDirName/TECHMD.xml" >>"$objDirName/.fits-`date +%s`.log" 2>&1', concurrentProcesses=20)
 # Cleanup

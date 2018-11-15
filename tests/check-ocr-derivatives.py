@@ -7,9 +7,12 @@ from glob import glob
 import mmap
 import re
 from datasets import commonEnglishWordS
+from multiprocessing import Pool, Manager
+import pprint
 
 OCR_FILENAME = 'OCR.txt'
 HOCR_FILENAME = 'HOCR.html'
+MAX_PROCESSES = None
 
 def fileContains(filepath, mystring):
     """Check if a file contains a string
@@ -56,35 +59,44 @@ def doCheck(dirname, state):
     checkOCR(dirname, state)
     checkHOCR(dirname, state)
     state['PAGES_CHECKED'] = state['PAGES_CHECKED'] + 1
+    logging.debug("%s : %s" % (os.getpid(), state['PAGES_CHECKED']))
 
-argparser = argparse.ArgumentParser()
-argparser.add_argument("TOPFOLDER")
-args = argparser.parse_args()
+if __name__ == '__main__':
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument("TOPFOLDER")
+    args = argparser.parse_args()
 
-TOPFOLDER = args.TOPFOLDER
-FILE_LIST_FILENAME = '.tmpfilelist-ocr-check'
+    TOPFOLDER = args.TOPFOLDER
+    FILE_LIST_FILENAME = '.tmpfilelist-ocr-check'
 
-# Set up basic logging
-logging.basicConfig(level=logging.DEBUG)
+    # Set up basic logging
+    logging.basicConfig(level=logging.INFO)
 
-logging.info('Checking OCR in folder ' + TOPFOLDER)
+    logging.info('Checking OCR in folder ' + TOPFOLDER)
 
-# Go in each folder (page)
-dirnameS = glob(TOPFOLDER + "/*/")
+    # Go in each folder (page)
+    dirnameS = glob(TOPFOLDER + "/*/")
 
-state = {
-    'PAGES_CHECKED': 0,
-    'TEXTLESS_PAGES': 0
-    }
+    # Set up a multiprocessing manager for interprocess communications about
+    # how many pages have been processed etc.
+    with Manager() as mpManager:
+        state = mpManager.dict()
+        state['PAGES_CHECKED'] = 0
+        state['TEXTLESS_PAGES'] = 0
+        stateS = []
+        for i in range(len(dirnameS)):
+            stateS.append(state)
+        myMap = set(zip(dirnameS, stateS))
 
-for dirname in dirnameS:
-    doCheck(dirname, state)
+        # Start the multiprocessing pool
+        with Pool(MAX_PROCESSES) as mpPool:
+            logging.debug(mpPool.starmap(doCheck, myMap))
 
+        # Processing complete. Now report out.
+        logging.info('Checked %s pages', state['PAGES_CHECKED'])
+        logging.info('Pages missing OCR text: %s', state['TEXTLESS_PAGES'])
 
-logging.info('Checked %s pages', state['PAGES_CHECKED'])
-logging.info('Pages missing OCR text: %s', state['TEXTLESS_PAGES'])
+        textlessRatio = state['TEXTLESS_PAGES']/(state['PAGES_CHECKED']/100)
 
-textlessRatio = state['TEXTLESS_PAGES']/(state['PAGES_CHECKED']/100)
-
-if textlessRatio > 10:
-    logging.error('Over 10 percent of pages missing OCR text: %s percent' % textlessRatio)
+        if textlessRatio > 10:
+            logging.error('Over 10 percent of pages missing OCR text: %s percent' % textlessRatio)

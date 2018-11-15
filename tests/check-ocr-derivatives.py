@@ -7,12 +7,12 @@ from glob import glob
 import mmap
 import re
 from datasets import commonEnglishWordS
+from multiprocessing import Pool, Manager
+import pprint
 
 OCR_FILENAME = 'OCR.txt'
 HOCR_FILENAME = 'HOCR.html'
-
-PAGES_CHECKED = 0
-TEXTLESS_PAGES = 0
+MAX_PROCESSES = None
 
 def fileContains(filepath, mystring):
     """Check if a file contains a string
@@ -33,20 +33,19 @@ def fileContainsCommonEnglishWords(filepath):
     # no matches... return False
     return False
 
-def checkOCR(dirname):
+def checkOCR(dirname, state):
     # Is there an OCR.txt file?
     # Does the file contain an english word? e.g. 'the, and'
-    global TEXTLESS_PAGES
     filename = dirname + OCR_FILENAME
     try:
         if fileContainsCommonEnglishWords(filename) is False:
             logging.warning("Page OCR output doesn't contain any common English words \"%s\"" % filename)
-            TEXTLESS_PAGES = TEXTLESS_PAGES + 1
+            state['TEXTLESS_PAGES'] = state['TEXTLESS_PAGES'] + 1
     except FileNotFoundError:
         logging.error('File not found %s' % filename)
-        TEXTLESS_PAGES = TEXTLESS_PAGES + 1
+        state['TEXTLESS_PAGES'] = state['TEXTLESS_PAGES'] + 1
 
-def checkHOCR(dirname):
+def checkHOCR(dirname, state):
     # Is there an HOCR.html file?
     # Does the HOCR file contain xml/html?
     filename = dirname + HOCR_FILENAME
@@ -56,30 +55,48 @@ def checkHOCR(dirname):
     except FileNotFoundError:
         logging.error('File not found %s' % filename)
 
-argparser = argparse.ArgumentParser()
-argparser.add_argument("TOPFOLDER")
-args = argparser.parse_args()
+def doCheck(dirname, state):
+    checkOCR(dirname, state)
+    checkHOCR(dirname, state)
+    state['PAGES_CHECKED'] = state['PAGES_CHECKED'] + 1
+    logging.debug("%s : %s" % (os.getpid(), state['PAGES_CHECKED']))
 
-TOPFOLDER = args.TOPFOLDER
-FILE_LIST_FILENAME = '.tmpfilelist-ocr-check'
+if __name__ == '__main__':
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument("TOPFOLDER")
+    args = argparser.parse_args()
 
-# Set up basic logging
-logging.basicConfig(level=logging.DEBUG)
+    TOPFOLDER = args.TOPFOLDER
+    FILE_LIST_FILENAME = '.tmpfilelist-ocr-check'
 
-logging.info('Checking OCR in folder ' + TOPFOLDER)
+    # Set up basic logging
+    logging.basicConfig(level=logging.INFO)
 
-# Go in each folder (page)
-dirnameS = glob(TOPFOLDER + "/*/")
+    logging.info('Checking OCR in folder ' + TOPFOLDER)
 
-for dirname in dirnameS:
-    checkOCR(dirname)
-    checkHOCR(dirname)
-    PAGES_CHECKED = PAGES_CHECKED + 1
+    # Go in each folder (page)
+    dirnameS = glob(TOPFOLDER + "/*/")
 
-logging.info('Checked %s pages', PAGES_CHECKED)
-logging.info('Pages missing OCR text: %s', TEXTLESS_PAGES)
+    # Set up a multiprocessing manager for interprocess communications about
+    # how many pages have been processed etc.
+    with Manager() as mpManager:
+        state = mpManager.dict()
+        state['PAGES_CHECKED'] = 0
+        state['TEXTLESS_PAGES'] = 0
+        stateS = []
+        for i in range(len(dirnameS)):
+            stateS.append(state)
+        myMap = set(zip(dirnameS, stateS))
 
-textlessRatio = TEXTLESS_PAGES/(PAGES_CHECKED/100)
+        # Start the multiprocessing pool
+        with Pool(MAX_PROCESSES) as mpPool:
+            logging.debug(mpPool.starmap(doCheck, myMap))
 
-if textlessRatio > 10:
-    logging.error('Over 10 percent of pages missing OCR text: %s percent' % textlessRatio)
+        # Processing complete. Now report out.
+        logging.info('Checked %s pages', state['PAGES_CHECKED'])
+        logging.info('Pages missing OCR text: %s', state['TEXTLESS_PAGES'])
+
+        textlessRatio = state['TEXTLESS_PAGES']/(state['PAGES_CHECKED']/100)
+
+        if textlessRatio > 10:
+            logging.error('Over 10 percent of pages missing OCR text: %s percent' % textlessRatio)

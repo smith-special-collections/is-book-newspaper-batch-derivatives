@@ -33,23 +33,21 @@ def fileContainsCommonEnglishWords(filepath):
     # no matches... return False
     return False
 
-def checkOCR(dirname, state):
+def checkOCR(dirname):
     # Is there an OCR.txt file?
     # Does the file contain an english word? e.g. 'the, and'
     filename = dirname + OCR_FILENAME
     try:
         if fileContainsCommonEnglishWords(filename) is False:
             logging.warning("Page OCR output doesn't contain any common English words \"%s\"" % filename)
-            state['TEXTLESS_PAGES'] = state['TEXTLESS_PAGES'] + 1
             return False
     except FileNotFoundError:
         logging.error('File not found %s' % filename)
-        state['TEXTLESS_PAGES'] = state['TEXTLESS_PAGES'] + 1
         return False
     else:
         return True
 
-def checkHOCR(dirname, state):
+def checkHOCR(dirname):
     # Is there an HOCR.html file?
     # Does the HOCR file contain xml/html?
     filename = dirname + HOCR_FILENAME
@@ -63,15 +61,13 @@ def checkHOCR(dirname, state):
     else:
         return True
 
-def doCheck(dirname, state):
+def doCheck(dirname):
     result = True
-    if not checkOCR(dirname, state):
+    if not checkOCR(dirname):
         result = False
-    if not checkHOCR(dirname, state):
+    if not checkHOCR(dirname):
         result = False
     logging.debug("Incrementing PAGES_CHECKED")
-    state['PAGES_CHECKED'] = state['PAGES_CHECKED'] + 1
-    logging.debug("%s : %s" % (os.getpid(), state['PAGES_CHECKED']))
     return result
 
 if __name__ == '__main__':
@@ -92,32 +88,23 @@ if __name__ == '__main__':
 
     # Set up a multiprocessing manager for interprocess communications about
     # how many pages have been processed etc.
-    with Manager() as mpManager:
-        state = mpManager.dict()
-        state['PAGES_CHECKED'] = 0
-        state['TEXTLESS_PAGES'] = 0
-        stateS = []
-        for i in range(len(dirnameS)):
-            stateS.append(state)
-        myMap = set(zip(dirnameS, stateS))
+    # Start the multiprocessing pool
+    logging.info("About to check %s pages" % len(dirnameS))
+    with Pool(MAX_PROCESSES) as mpPool:
+        poolResultS = mpPool.map(doCheck, dirnameS)
 
-        # Start the multiprocessing pool
-        logging.info("About to check %s pages" % len(myMap))
-        with Pool(MAX_PROCESSES) as mpPool:
-            poolResultS = mpPool.starmap(doCheck, myMap)
+    logging.info("RESULT: %s pages checked" % len(poolResultS))
+    badPages = 0
+    for result in poolResultS:
+        if not result:
+            badPages = badPages + 1
+    logging.info("RESULT: %s bad pages found" % badPages)
 
-        logging.info("RESULT: %s pages checked" % len(poolResultS))
-        badPages = 0
-        for result in poolResultS:
-            if not result:
-                badPages = badPages + 1
-        logging.info("RESULT: %s bad pages found" % badPages)
+    # Processing complete. Now report out.
+    logging.info('Checked %s pages', len(poolResultS))
+    logging.info('Pages missing OCR text: %s', badPages)
 
-        # Processing complete. Now report out.
-        logging.info('Checked %s pages', state['PAGES_CHECKED'])
-        logging.info('Pages missing OCR text: %s', state['TEXTLESS_PAGES'])
+    textlessRatio = badPages/(len(poolResultS)/100)
 
-        textlessRatio = state['TEXTLESS_PAGES']/(state['PAGES_CHECKED']/100)
-
-        if textlessRatio > 10:
-            logging.error('Over 10 percent of pages missing OCR text: %s percent' % textlessRatio)
+    if textlessRatio > 10:
+        logging.error('Over 10 percent of pages missing OCR text: %s percent' % textlessRatio)

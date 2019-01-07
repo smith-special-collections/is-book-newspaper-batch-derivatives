@@ -46,9 +46,10 @@ KAKADU_ARGUMENTS = '-num_threads 1 -rate 0.5 Clayers=1 Clevels=7 "Cprecincts={25
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("TOPFOLDER")
+argparser.add_argument("--max-cpus", default=0, required=True, type=int, help="Number of CPUs to utilize for parallel processing")
 args = argparser.parse_args()
 
-MAX_CPUS = 3
+MAX_CPUS = args.max_cpus
 TOPFOLDER = args.TOPFOLDER
 FILE_LIST_FILENAME = '.tmpfilelist'
 
@@ -56,6 +57,8 @@ FILE_LIST_FILENAME = '.tmpfilelist'
 logFileName = TOPFOLDER + "derivatives-" + start.strftime('%Y%m%d-%H%M%S') + '.log'
 logging.basicConfig(filename=logFileName, level=logging.DEBUG)
 print("Logging to: %s" % logFileName)
+
+logging.getLogger("runbatchprocess").setLevel(logging.DEBUG)
 
 logging.info('Processing folder ' + TOPFOLDER)
 

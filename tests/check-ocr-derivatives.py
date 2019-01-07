@@ -79,7 +79,7 @@ if __name__ == '__main__':
     FILE_LIST_FILENAME = '.tmpfilelist-ocr-check'
 
     # Set up basic logging
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
     logging.info('Checking OCR in folder ' + TOPFOLDER)
 

@@ -55,6 +55,8 @@ logFileName = TOPFOLDER + "derivatives-" + start.strftime('%Y%m%d-%H%M%S') + '.l
 logging.basicConfig(filename=logFileName, level=logging.DEBUG)
 print("Logging to: %s" % logFileName)
 
+#logging.getLogger("runbatchprocess").setLevel(logging.DEBUG)
+
 logging.info('Processing folder ' + TOPFOLDER)
 
 # Use find to generate a list of OBJ files and write it to a file
@@ -62,21 +64,21 @@ logging.info('Processing folder ' + TOPFOLDER)
 os.system("find '%s' -name 'OBJ.*' > %s" % (TOPFOLDER, FILE_LIST_FILENAME))
 
 logging.info('Generating TN.jpg derivatives')
-runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 256x256 "$objFileName" "$objDirName/TN.jpg"', concurrentProcesses=38)
+runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 256x256 "$objFileName[0]" "$objDirName/TN.jpg"', concurrentProcesses=38)
 logging.info('Copy representative thumbnail')
 os.system("cp %s/00001/TN.jpg %s/" % (TOPFOLDER, TOPFOLDER))
 logging.info('Generating JP2.jp2 derivatives')
 # Kakadu doesn't like 1bit tiffs. For some reason imagemagick ignores -depth 8 when going from tif to tif so we'll use png as
 # an intermediary
-runbatchprocess.process(FILE_LIST_FILENAME, 'convert -compress none "$objFileName" -depth 8 "$objDirName/.8bitOBJ.png"', concurrentProcesses=38)
+runbatchprocess.process(FILE_LIST_FILENAME, 'convert -compress none "$objFileName[0]" -depth 8 "$objDirName/.8bitOBJ.png"', concurrentProcesses=38)
 runbatchprocess.process(FILE_LIST_FILENAME, 'convert -compress none "$objDirName/.8bitOBJ.png" -depth 8 "$objDirName/.uncompressedOBJ.tif"', concurrentProcesses=38)
 # Then run Kakadu using the Islandora arguments
 # Kakadu is multithreaded so I expected to set concurrentProcesses to 1. However I was seeing underutilization so I set Kakadu to be not multithreaded (above) and set the concurrentProcesses to a level to 39.
 runbatchprocess.process(FILE_LIST_FILENAME, 'kdu_compress -i "$objDirName/.uncompressedOBJ.tif" -o "$objDirName/JP2.jp2" %s >> "$objDirName/.kakadu-`date +%%s`.log" 2>&1' % KAKADU_ARGUMENTS, concurrentProcesses=38)
 logging.info('Generating JPG.jpg derivatives (preview jpg)')
-runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 767x767 "$objFileName" "$objDirName/JPG.jpg"', concurrentProcesses=38)
+runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 767x767 "$objFileName[0]" "$objDirName/JPG.jpg"', concurrentProcesses=38)
 logging.info('Generating LARGE_JPG.jpg derivatives')
-runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 1920x1920 "$objFileName" "$objDirName/LARGE_JPG.jpg"', concurrentProcesses=38)
+runbatchprocess.process(FILE_LIST_FILENAME, 'convert -resize 220x220 "$objFileName[0]" "$objDirName/LARGE_JPG.jpg"', concurrentProcesses=38)
 logging.info('Generating HOCR and OCR')
 # Processess file for tesseract to make them easier to read
 runbatchprocess.process(FILE_LIST_FILENAME, 'convert -compress none -blur 0x2 -threshold 50% "$objDirName/.8bitOBJ.png" "$objDirName/.OCRpreprocessed.tif"', concurrentProcesses=38)

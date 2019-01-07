@@ -8,6 +8,7 @@ import subprocess
 from string import Template
 import logging
 from multiprocessing import Pool
+import math
 
 def executeSystemProcesses(objFileName, commandTemplate):
     objFileName = objFileName.strip()
@@ -17,7 +18,7 @@ def executeSystemProcesses(objFileName, commandTemplate):
     logging.debug(command)
     subprocess.call(command, shell=True)
     
-def process(FILE_LIST_FILENAME, commandTemplateString, concurrentProcesses=3):
+def process(FILE_LIST_FILENAME, commandTemplateString, concurrentProcesses=0):
     """Go through the list of files and run the provided command against them,
     one at a time. Template string maps the terms $objFileName and $objDirName.
     
@@ -26,6 +27,9 @@ def process(FILE_LIST_FILENAME, commandTemplateString, concurrentProcesses=3):
     """
     commandTemplate = Template(commandTemplateString)
     mpBatchMap = []
+
+    # Round number of procs down to the nearest integer
+    concurrentProcesses = math.trunc(concurrentProcesses)
 
     with open(FILE_LIST_FILENAME) as fileList:
         for line in fileList:

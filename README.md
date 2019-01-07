@@ -12,9 +12,11 @@ For most systems you will need to set the path to Kakadu and Fits. Copy config.p
 
 Usage
 =====
-`python3 generate-derivatives.py --max-cpus 4 [Book Batch Folder]`
+```
+python3 generate-derivatives.py --max-cpus 4 [Book Batch Folder]
+```
 
-generate-derivatives.py assumes a standard Islandora book/newspaper issue folder structure:
+`generate-derivatives.py` assumes a standard Islandora book/newspaper issue folder structure:
 
 ```
 issue/book 1:
@@ -49,6 +51,16 @@ etc...
 Tuning concurrent processes
 ===========================
 Use the `--max-cpus` command line option to set how many concurrent processes should be run at a time in the multiprocessing pool. You can see the CPUs on your system using the `top` command. Press '1' to display all of the CPUs on the system.
+
+Checking OCR output
+===================
+`tests/check-ocr-derivatives.py` can be used for a very rough assessment of OCR output. It will scan the pages of a book/issue and raise an error if greater than 90% of the pages of OCR output don't contain common English words. This litmus test can be useful for checking if the OCR is working at all on a given batch.
+
+Usage
+-----
+```
+python3 tests/check-ocr-derivatives.py [Book Batch Folder]
+```
 
 Requirements
 ============

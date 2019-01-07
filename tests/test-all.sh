@@ -33,4 +33,4 @@ find . -maxdepth 1 -type d -name "smith_ssc_*" | xargs -n 1 -I % ls %/TN.jpg | w
 echo "Number of book/issue level OCR.txt files"
 find . -maxdepth 1 -type d -name "smith_ssc_*" | xargs -n 1 -I % ls %/OCR.txt | wc -l
 
-echo "Test sample output located in tests/sample-data/small_sample-microdexed/smith_ssc_324_r017_m001/"
+echo "Sample batch output located in tests/sample-data/small_sample-microdexed/smith_ssc_324_r017_m001/"

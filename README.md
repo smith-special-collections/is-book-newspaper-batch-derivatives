@@ -96,3 +96,39 @@ imagemagick
 For converting files into different sizes and qualities
 
 Use your distro's package repository.
+
+Automated tests
+===============
+
+```
+cd tests/
+./test-all.sh
+```
+
+At the time of writing the test results should read:
+
+```
+Number of OBJ* files
+      10
+Number of TN.jpg files
+      11
+Number of JPG.jpg files
+      10
+Number of LARGE_JPG.jpg files
+      10
+Number of JP2.jp2 files
+      10
+Number of HOCR.html files
+      10
+Number of OCR.txt files
+      11
+Number of TECHMD.xml files
+      10
+Number of book/issue level TN.jpg files
+       1
+Number of book/issue level OCR.txt files
+       1
+```
+Note that the number of TN.jpg and OCR.txt files is one greater than the number of pages, which accounts for the top level copies of one per book/issue.
+
+As oddball images are discovered and the code updated to accommodate them, they should be added to the `tests/sample-data/small_sample directory` and documented in the README.md file in that directory.

@@ -11,7 +11,6 @@ import argparse
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("TOPFOLDER")
-argparser.add_argument("PAGEFILEEXTENSION")
 argparser.add_argument('--nocopy', help="Modifying the folder directly instead of making a copy", action="store_true")
 args = argparser.parse_args()
 
@@ -26,8 +25,6 @@ else:
     shutil.copytree(sourceFolder, destFolder)
 os.chdir(destFolder)
 
-pageFileExtension = '.' + args.PAGEFILEEXTENSION
-
 # MODS template for page level metadata (just ID for linking)
 pageModsTemplate = """<?xml version="1.0" encoding="UTF-8"?>
 <mods xmlns="http://www.loc.gov/mods/v3" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -38,26 +35,36 @@ pageModsTemplate = """<?xml version="1.0" encoding="UTF-8"?>
 </mods>
 """
 
-
+fileExtentionGuestList = ['TIF','TIFF','tif','tiff','jpg','JPG','jpeg','JPEG']
 
 # Now for every page file make a folder
 # and move the page into there and name it OBJ
 pageNum = 1
-pageFileName_S = glob.glob(r'*' + pageFileExtension)
+pageFileName_S = glob.glob(r'*')
 pageFileName_S.sort()
 
-if len(pageFileName_S) < 1:
-    print("No files in %s ending in %s" % (destFolder, pageFileExtension))
+filteredPageFileName_S = []
+
+def getExtension(fileName):
+    return pageFileName.split('.')[-1]
+
+for pageFileName in pageFileName_S:
+    if getExtension(pageFileName) in fileExtentionGuestList:
+        filteredPageFileName_S.append(pageFileName)
+
+if len(filteredPageFileName_S) < 1:
+    print("No files in %s ending in %s" % (destFolder, fileExtentionGuestList))
     print("Quiting")
     exit(1)
 
-for pageFileName in pageFileName_S:
+for pageFileName in filteredPageFileName_S:
     print(pageFileName)
+    pageFileExtension = getExtension(pageFileName)
     pageFolder = str(pageNum).zfill(5)
     print('Create folder %s' % pageFolder)
     os.makedirs(pageFolder)
     print('Move file %s into folder %s' % (pageFileName, pageFolder))
-    shutil.move(pageFileName, pageFolder + '/' + 'OBJ' + pageFileExtension)
+    shutil.move(pageFileName, pageFolder + '/' + 'OBJ.' + pageFileExtension)
     id = pageFileName.split(".")[0]
     modsOutput = pageModsTemplate.format(identifier=id)
     print("Generate MODS.xml")

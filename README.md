@@ -67,7 +67,7 @@ Requirements
 
 GNU/Linux
 ---------
-It is strongly recommended that this code be run on GNU/Linux. This code relies on several command line tools. GNU versions are assumed. The BSD versions that ship with Mac OS X may behave differently.
+It is strongly recommended that this code be run on GNU/Linux. This code relies on several command line tools. GNU versions are assumed. The BSD versions that ship with Mac OS X may behave differently. If you are trying to use Homebrew version in OSX make sure that you add `export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"` to your `~/.bash_profile` and start a new terminal session.
 
 Python 3
 --------

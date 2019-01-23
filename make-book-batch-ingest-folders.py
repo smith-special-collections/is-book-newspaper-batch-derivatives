@@ -11,6 +11,7 @@ import argparse
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("TOPFOLDER")
+argparser.add_argument("PAGEFILEEXTENSION")
 argparser.add_argument('--nocopy', help="Modifying the folder directly instead of making a copy", action="store_true")
 args = argparser.parse_args()
 
@@ -25,7 +26,7 @@ else:
     shutil.copytree(sourceFolder, destFolder)
 os.chdir(destFolder)
 
-pageFileExtension = '.TIF'
+pageFileExtension = '.' + args.PAGEFILEEXTENSION
 
 # MODS template for page level metadata (just ID for linking)
 pageModsTemplate = """<?xml version="1.0" encoding="UTF-8"?>
